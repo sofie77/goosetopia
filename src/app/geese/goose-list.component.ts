@@ -1,4 +1,6 @@
+import { Message } from "@angular/compiler/src/i18n/i18n_ast";
 import { Component, OnInit } from "@angular/core";
+import { Subscription } from "rxjs";
 import { Igoose } from "./goose";
 import { GooseService } from "./goose.service";
 
@@ -16,6 +18,8 @@ imageMargin: number = 2;
 showImage: boolean = false;
 filteredGeese: Igoose[] = [];
 geese: Igoose[] = [];
+errorMessage: string = '';
+sub!: Subscription;
 
 private _listFilter : string = '';
 get listFilter(): string {
@@ -26,9 +30,6 @@ set listFilter(value: string){
     console.log('in setter:', value);
     this.filteredGeese = this.performFilter(value);
 }
-
-
-
 constructor(private gooseService: GooseService){}
 
 performFilter(filterBy: string): Igoose[]{
@@ -40,7 +41,19 @@ toggleImage(): void{
     this.showImage = !this.showImage;
 }
 ngOnInit(): void{
-    this.geese = this.gooseService.getGeese();
-    this.filteredGeese = this.geese;
+    this.sub = this.gooseService.getGeese().subscribe({
+        next: geese => {
+            this.geese = geese;
+            this.filteredGeese = this. geese;
+        },
+        error: err => this.errorMessage = err
+    });
+    
 }
+ngOnDestroy() {
+    this.sub.unsubscribe();
+}
+/* onRatingClicked(message: string); void{
+    this.pageTitle='goose list ' + Message;
+} */
 }
